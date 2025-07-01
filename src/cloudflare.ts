@@ -14,10 +14,34 @@ export async function checkWranglerAuth(): Promise<boolean> {
   }
 }
 
+export async function detectProjectType(wranglerConfig: any): Promise<'pages' | 'workers'> {
+  // Check if the config has pages-specific configuration
+  if (wranglerConfig.pages_build_output_dir || 
+      wranglerConfig.build?.command || 
+      wranglerConfig.build?.cwd ||
+      wranglerConfig.compatibility_flags) {
+    return 'pages';
+  }
+  
+  // Try to detect by attempting a pages command first
+  try {
+    await execa('wrangler', ['pages', 'project', 'list'], {
+      stdio: 'pipe',
+      timeout: 5000,
+      reject: false
+    });
+    return 'pages';
+  } catch {
+    // If pages command fails, assume workers
+    return 'workers';
+  }
+}
+
 export async function pushToCloudflare(
   projectName: string, 
   environment: string, 
-  envVars: EnvVar[]
+  envVars: EnvVar[],
+  wranglerConfig?: any
 ): Promise<void> {
   // Check if wrangler is available and user is logged in
   const isAuthenticated = await checkWranglerAuth();
@@ -30,6 +54,10 @@ export async function pushToCloudflare(
   
   console.log(chalk.blue(`🔑 Authenticated with Cloudflare`));
   
+  // Detect project type
+  const projectType = await detectProjectType(wranglerConfig || {});
+  console.log(chalk.cyan(`🔍 Detected project type: ${projectType === 'pages' ? 'Cloudflare Pages' : 'Cloudflare Workers'}`));
+  
   let successCount = 0;
   let errorCount = 0;
   
@@ -37,11 +65,24 @@ export async function pushToCloudflare(
     try {
       console.log(chalk.gray(`  Setting ${envVar.key}...`));
       
-      const args = ['secret', 'put', envVar.key];
+      let args: string[];
       
-      // Add environment flag if not production
-      if (environment !== 'production') {
-        args.push('--env', environment);
+      if (projectType === 'pages') {
+        args = ['pages', 'secret', 'put', envVar.key];
+        // For Pages, add project name
+        args.push('--project-name', projectName);
+        
+        // Add environment flag for Pages
+        if (environment !== 'production') {
+          args.push('--environment', environment);
+        }
+      } else {
+        args = ['secret', 'put', envVar.key];
+        
+        // Add environment flag for Workers
+        if (environment !== 'production') {
+          args.push('--env', environment);
+        }
       }
       
       // Use execa to run wrangler command with input

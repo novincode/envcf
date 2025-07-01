@@ -121,7 +121,7 @@ export async function main(options: CliOptions): Promise<void> {
     
     // Step 6: Push to Cloudflare
     console.log(chalk.cyan('\n🚀 Pushing to Cloudflare...'));
-    await pushToCloudflare(wranglerConfig.name, environment, allEnvVars);
+    await pushToCloudflare(wranglerConfig.name, environment, allEnvVars, wranglerConfig);
     
     console.log(chalk.green.bold('\n✨ All environment variables pushed successfully!'));
     
