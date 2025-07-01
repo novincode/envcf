@@ -186,7 +186,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-MIT © [Shayan Moradi](https://github.com/your-username)
+MIT © [Shayan Moradi](https://github.com/novincode)
 
 ## 🙏 Acknowledgments
 

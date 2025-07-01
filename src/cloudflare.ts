@@ -1,6 +1,6 @@
 import { execa } from 'execa';
 import chalk from 'chalk';
-import type { EnvVar } from './main.js';
+import type { EnvVar } from './main';
 
 export async function checkWranglerAuth(): Promise<boolean> {
   try {

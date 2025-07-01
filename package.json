@@ -8,8 +8,7 @@
     "envcf": "./dist/cli.js"
   },
   "files": [
-    "dist",
-    "bin"
+    "dist"
   ],
   "scripts": {
     "build": "tsup",
@@ -32,11 +31,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/envcf.git"
+    "url": "https://github.com/novincode/envcf.git"
   },
-  "homepage": "https://github.com/your-username/envcf#readme",
+  "homepage": "https://github.com/novincode/envcf#readme",
   "bugs": {
-    "url": "https://github.com/your-username/envcf/issues"
+    "url": "https://github.com/novincode/envcf/issues"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { config } from 'dotenv';
-import type { EnvVar } from './main.js';
+import type { EnvVar } from './main';
 
 export async function findEnvFiles(customFile?: string): Promise<string[]> {
   if (customFile) {
