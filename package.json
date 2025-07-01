@@ -1,0 +1,61 @@
+{
+  "name": "envcf",
+  "version": "1.0.0",
+  "description": "🚀 Beautiful CLI tool to push environment variables to Cloudflare Pages/Workers",
+  "main": "dist/cli.js",
+  "type": "module",
+  "bin": {
+    "envcf": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js",
+    "prepublishOnly": "pnpm build",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "cloudflare",
+    "environment-variables",
+    "cli",
+    "wrangler",
+    "pages",
+    "workers",
+    "env",
+    "deployment"
+  ],
+  "author": "Shayan Moradi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/envcf.git"
+  },
+  "homepage": "https://github.com/your-username/envcf#readme",
+  "bugs": {
+    "url": "https://github.com/your-username/envcf/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@10.7.1",
+  "dependencies": {
+    "@iarna/toml": "^2.2.5",
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0",
+    "dotenv": "^17.0.0",
+    "execa": "^9.6.0",
+    "inquirer": "^12.6.3",
+    "jsonc-parser": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.8",
+    "@types/node": "^24.0.8",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}
