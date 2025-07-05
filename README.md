@@ -16,6 +16,7 @@ EnvCF is a modern, user-friendly CLI tool that makes it super easy to sync your 
 - 🔒 **Type-safe** - Built with TypeScript for reliability
 - 🏃‍♂️ **Dry run mode** - Preview changes before applying them
 - ⚡ **Fast & lightweight** - Minimal dependencies, maximum performance
+- 🌩️ **Multi-account support** - Seamlessly integrates with cfman for managing multiple Cloudflare accounts
 
 ## 🚀 Installation
 
@@ -69,6 +70,29 @@ envcf --config wrangler.custom.toml
 envcf --help
 ```
 
+### Multi-Account Management
+
+EnvCF integrates seamlessly with [cfman](https://github.com/novincode/cfman) for managing multiple Cloudflare accounts:
+
+```bash
+# First, set up your accounts with cfman
+npx cfman token add --name production --token cf_your_production_token
+npx cfman token add --name staging --token cf_your_staging_token
+
+# Then use envcf with specific accounts
+envcf --account production     # Deploy to production account
+envcf --account staging        # Deploy to staging account
+
+# You can combine with other options
+envcf --account production --dry-run --file .env.prod
+```
+
+**Benefits of cfman integration:**
+- 🔐 **Secure token management** - Store multiple API tokens safely
+- 🚀 **One-command deployment** - No manual token switching
+- 🛡️ **Isolated accounts** - Each account's tokens are kept separate
+- 🎯 **Environment specific** - Perfect for agencies or multi-client setups
+
 ## 🏗️ Prerequisites
 
 1. **Wrangler CLI** installed and authenticated:
@@ -77,11 +101,17 @@ envcf --help
    wrangler login
    ```
 
-2. **Project structure** with either:
+2. **Optional: cfman** for multi-account management:
+   ```bash
+   npm install -g cfman
+   cfman token add --name production --token your_token
+   ```
+
+3. **Project structure** with either:
    - `wrangler.toml` file
    - `wrangler.jsonc` file
 
-3. **Environment files** like:
+4. **Environment files** like:
    - `.env`
    - `.env.local`
    - `.env.production`

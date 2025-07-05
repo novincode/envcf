@@ -10,6 +10,7 @@ export interface CliOptions {
   dryRun?: boolean;
   file?: string;
   config?: string;
+  account?: string;
 }
 
 export interface EnvVar {
@@ -20,6 +21,11 @@ export interface EnvVar {
 
 export async function main(options: CliOptions): Promise<void> {
   try {
+    // Show cfman integration info if account is specified
+    if (options.account) {
+      console.log(chalk.blue(`🌩️ Using cfman account: ${options.account}`));
+    }
+    
     // Step 1: Find and parse wrangler config
     console.log(chalk.cyan('🔍 Looking for wrangler configuration...'));
     const configPath = options.config || await findWranglerConfig();
@@ -121,7 +127,7 @@ export async function main(options: CliOptions): Promise<void> {
     
     // Step 6: Push to Cloudflare
     console.log(chalk.cyan('\n🚀 Pushing to Cloudflare...'));
-    await pushToCloudflare(wranglerConfig.name, environment, allEnvVars, wranglerConfig);
+    await pushToCloudflare(wranglerConfig.name, environment, allEnvVars, wranglerConfig, options.account);
     
     console.log(chalk.green.bold('\n✨ All environment variables pushed successfully!'));
     

@@ -2,9 +2,10 @@ import { execa } from 'execa';
 import chalk from 'chalk';
 import type { EnvVar } from './main';
 
-export async function checkWranglerAuth(): Promise<boolean> {
+export async function checkWranglerAuth(account?: string): Promise<boolean> {
   try {
-    const { stdout } = await execa('wrangler', ['whoami'], { 
+    const baseCommand = account ? ['cfman', 'wrangler', '--account', account] : ['wrangler'];
+    const { stdout } = await execa('npx', [...baseCommand, 'whoami'], { 
       stdio: 'pipe',
       timeout: 10000 
     });
@@ -14,7 +15,7 @@ export async function checkWranglerAuth(): Promise<boolean> {
   }
 }
 
-export async function detectProjectType(wranglerConfig: any): Promise<'pages' | 'workers'> {
+export async function detectProjectType(wranglerConfig: any, account?: string): Promise<'pages' | 'workers'> {
   // Check if the config has pages-specific configuration
   if (wranglerConfig.pages_build_output_dir || 
       wranglerConfig.build?.command || 
@@ -25,7 +26,8 @@ export async function detectProjectType(wranglerConfig: any): Promise<'pages' | 
   
   // Try to detect by attempting a pages command first
   try {
-    await execa('wrangler', ['pages', 'project', 'list'], {
+    const baseCommand = account ? ['cfman', 'wrangler', '--account', account] : ['wrangler'];
+    await execa('npx', [...baseCommand, 'pages', 'project', 'list'], {
       stdio: 'pipe',
       timeout: 5000,
       reject: false
@@ -41,21 +43,32 @@ export async function pushToCloudflare(
   projectName: string, 
   environment: string, 
   envVars: EnvVar[],
-  wranglerConfig?: any
+  wranglerConfig?: any,
+  account?: string
 ): Promise<void> {
   // Check if wrangler is available and user is logged in
-  const isAuthenticated = await checkWranglerAuth();
+  const isAuthenticated = await checkWranglerAuth(account);
   
   if (!isAuthenticated) {
-    throw new Error(
-      'Wrangler authentication required. Please run "wrangler login" first.'
-    );
+    if (account) {
+      throw new Error(
+        `cfman authentication required for account "${account}". Please ensure cfman is installed and the account is configured.`
+      );
+    } else {
+      throw new Error(
+        'Wrangler authentication required. Please run "wrangler login" first.'
+      );
+    }
   }
   
-  console.log(chalk.blue(`🔑 Authenticated with Cloudflare`));
+  if (account) {
+    console.log(chalk.blue(`🔑 Authenticated with Cloudflare (Account: ${account})`));
+  } else {
+    console.log(chalk.blue(`🔑 Authenticated with Cloudflare`));
+  }
   
   // Detect project type
-  const projectType = await detectProjectType(wranglerConfig || {});
+  const projectType = await detectProjectType(wranglerConfig || {}, account);
   console.log(chalk.cyan(`🔍 Detected project type: ${projectType === 'pages' ? 'Cloudflare Pages' : 'Cloudflare Workers'}`));
   
   let successCount = 0;
@@ -67,8 +80,11 @@ export async function pushToCloudflare(
       
       let args: string[];
       
+      // Determine base command (cfman or wrangler)
+      const baseCommand = account ? ['cfman', 'wrangler', '--account', account] : ['wrangler'];
+      
       if (projectType === 'pages') {
-        args = ['pages', 'secret', 'put', envVar.key];
+        args = [...baseCommand, 'pages', 'secret', 'put', envVar.key];
         // For Pages, add project name
         args.push('--project-name', projectName);
         
@@ -77,7 +93,7 @@ export async function pushToCloudflare(
           args.push('--environment', environment);
         }
       } else {
-        args = ['secret', 'put', envVar.key];
+        args = [...baseCommand, 'secret', 'put', envVar.key];
         
         // Add environment flag for Workers
         if (environment !== 'production') {
@@ -85,8 +101,11 @@ export async function pushToCloudflare(
         }
       }
       
-      // Use execa to run wrangler command with input
-      await execa('wrangler', args, {
+      // Use execa to run command with input
+      const execaCommand = account ? 'npx' : 'wrangler';
+      const execaArgs = account ? args : args.slice(1); // Remove 'wrangler' if using direct wrangler
+      
+      await execa(execaCommand, execaArgs, {
         input: envVar.value,
         stdio: ['pipe', 'pipe', 'pipe'],
         timeout: 30000,
@@ -113,16 +132,21 @@ export async function pushToCloudflare(
 
 export async function listCloudflareSecrets(
   projectName: string, 
-  environment?: string
+  environment?: string,
+  account?: string
 ): Promise<string[]> {
   try {
-    const args = ['secret', 'list'];
+    const baseCommand = account ? ['cfman', 'wrangler', '--account', account] : ['wrangler'];
+    const args = [...baseCommand, 'secret', 'list'];
     
     if (environment && environment !== 'production') {
       args.push('--env', environment);
     }
     
-    const { stdout } = await execa('wrangler', args, {
+    const execaCommand = account ? 'npx' : 'wrangler';
+    const execaArgs = account ? args : args.slice(1); // Remove 'wrangler' if using direct wrangler
+    
+    const { stdout } = await execa(execaCommand, execaArgs, {
       stdio: 'pipe',
       timeout: 15000
     });
