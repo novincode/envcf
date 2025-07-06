@@ -84,14 +84,13 @@ export async function pushToCloudflare(
       const baseCommand = account ? ['cfman', 'wrangler', '--account', account] : ['wrangler'];
       
       if (projectType === 'pages') {
-        // For Pages, use 'env vars set' instead of 'secret put'
-        args = [...baseCommand, 'pages', 'env', 'vars', 'set', envVar.key];
+        args = [...baseCommand, 'pages', 'secret', 'put', envVar.key];
+        // For Pages, add project name
         args.push('--project-name', projectName);
-        args.push('--value', envVar.value);
         
         // Add environment flag for Pages
         if (environment !== 'production') {
-          args.push('--env', environment);
+          args.push('--environment', environment);
         }
       } else {
         args = [...baseCommand, 'secret', 'put', envVar.key];
@@ -106,22 +105,13 @@ export async function pushToCloudflare(
       const execaCommand = account ? 'npx' : 'wrangler';
       const execaArgs = account ? args : args.slice(1); // Remove 'wrangler' if using direct wrangler
       
-      if (projectType === 'pages') {
-        // For Pages, we pass the value as a flag, no stdin needed
-        await execa(execaCommand, execaArgs, {
-          stdio: ['pipe', 'pipe', 'pipe'],
-          timeout: 30000,
-          cwd: process.cwd()
-        });
-      } else {
-        // For Workers, we pass the value via stdin
-        await execa(execaCommand, execaArgs, {
-          input: envVar.value,
-          stdio: ['pipe', 'pipe', 'pipe'],
-          timeout: 30000,
-          cwd: process.cwd()
-        });
-      }
+      // Both Pages and Workers use stdin for the value
+      await execa(execaCommand, execaArgs, {
+        input: envVar.value,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 30000,
+        cwd: process.cwd()
+      });
       
       console.log(chalk.green(`  ✅ ${envVar.key}`));
       successCount++;
