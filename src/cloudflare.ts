@@ -88,9 +88,9 @@ export async function pushToCloudflare(
         // For Pages, add project name
         args.push('--project-name', projectName);
         
-        // Add environment flag for Pages
+        // Add environment flag for Pages (use --environment-name for preview)
         if (environment !== 'production') {
-          args.push('--environment', environment);
+          args.push('--environment-name', environment);
         }
       } else {
         args = [...baseCommand, 'secret', 'put', envVar.key];
