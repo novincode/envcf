@@ -4,10 +4,10 @@ import type { EnvVar } from './main';
 
 export async function checkWranglerAuth(account?: string): Promise<boolean> {
   try {
-    const baseCommand = account ? ['cfman', 'wrangler', '--account', account] : ['wrangler'];
+    const baseCommand = account ? ['npx', 'cfman', 'wrangler', '--account', account] : ['wrangler'];
     const { stdout } = await execa('npx', [...baseCommand, 'whoami'], { 
       stdio: 'pipe',
-      timeout: 10000 
+      timeout: 20000 
     });
     return stdout.includes('@') || stdout.includes('logged in');
   } catch {
@@ -26,10 +26,10 @@ export async function detectProjectType(wranglerConfig: any, account?: string): 
   
   // Try to detect by attempting a pages command first
   try {
-    const baseCommand = account ? ['cfman', 'wrangler', '--account', account] : ['wrangler'];
+    const baseCommand = account ? ['npx', 'cfman', 'wrangler', '--account', account] : ['wrangler'];
     await execa('npx', [...baseCommand, 'pages', 'project', 'list'], {
       stdio: 'pipe',
-      timeout: 5000,
+      timeout: 20000,
       reject: false
     });
     return 'pages';
@@ -81,7 +81,7 @@ export async function pushToCloudflare(
       let args: string[];
       
       // Determine base command (cfman or wrangler)
-      const baseCommand = account ? ['cfman', 'wrangler', '--account', account] : ['wrangler'];
+      const baseCommand = account ? ['npx', 'cfman', 'wrangler', '--account', account] : ['wrangler'];
       
       if (projectType === 'pages') {
         args = [...baseCommand, 'pages', 'secret', 'put', envVar.key];
@@ -137,7 +137,7 @@ export async function listCloudflareSecrets(
   account?: string
 ): Promise<string[]> {
   try {
-    const baseCommand = account ? ['cfman', 'wrangler', '--account', account] : ['wrangler'];
+    const baseCommand = account ? ['npx', 'cfman', 'wrangler', '--account', account] : ['wrangler'];
     const args = [...baseCommand, 'secret', 'list'];
     
     if (environment && environment !== 'production') {
